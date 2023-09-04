@@ -466,6 +466,8 @@ func NewEthermintApp(
 		vestingtypes.ModuleName,
 	)
 
+	app.mm.SetOrderMidBlockers()
+
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
@@ -585,6 +587,7 @@ func NewEthermintApp(
 		panic(err)
 	}
 	app.SetAnteHandler(anteHandler)
+	app.SetMidBlocker(app.MidBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
@@ -610,6 +613,33 @@ func (app *EthermintApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBloc
 // EndBlocker updates every end block
 func (app *EthermintApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
+}
+
+func (app *EthermintApp) MidBlocker(ctx sdk.Context, req abci.RequestMidBlock) abci.ResponseMidBlock {
+	//midBlockTxs, normalTxs := SplitMidBlockTxs(req.Txs, app.TxDecoder)
+
+	idx := 0
+	txResults := make([]*abci.ResponseDeliverTx, len(req.Txs))
+
+	//// run mid-block txs first
+	//for _, tx := range midBlockTxs {
+	//	res := app.DeliverTx(abci.RequestDeliverTx{Tx: tx})
+	//	txResults[idx] = &res
+	//	idx++
+	//}
+
+	// run mid-block for each module
+	events := app.mm.MidBlock(ctx)
+
+	// run normal txs after mid-block
+	for _, tx := range req.Txs {
+		res := app.DeliverTx(abci.RequestDeliverTx{Tx: tx})
+		txResults[idx] = &res
+		idx++
+	}
+
+	// mid-block events would be in end-block events
+	return abci.ResponseMidBlock{DeliverTxs: txResults, Events: events}
 }
 
 // InitChainer updates at chain initialization

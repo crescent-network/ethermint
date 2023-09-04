@@ -9,6 +9,13 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// Temporary Manual Set Crescent Chain ID
+const (
+	ChainIdOrigin  = "crescent-1"
+	ChainIdMainNet = 9090
+	ChainIdTestNet = 9091
+)
+
 var (
 	regexChainID         = `[a-z]{1,}`
 	regexEIP155Separator = `_{1}`
