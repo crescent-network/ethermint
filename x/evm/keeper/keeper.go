@@ -94,19 +94,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // WithChainID sets the chain id to the local variable in the keeper
 func (k *Keeper) WithChainID(ctx sdk.Context) {
-	//chainID, err := ethermint.ParseChainID(ctx.ChainID())
-	//if err != nil {
-	//	panic(err)
-	//}
-	var chainID *big.Int
-
-	// Temporary Manual Set Crescent Chain ID
-	if ctx.ChainID() == ethermint.ChainIdOrigin {
-		// mainnet
-		chainID = big.NewInt(ethermint.ChainIdMainNet)
-	} else {
-		// testnet
-		chainID = big.NewInt(ethermint.ChainIdTestNet)
+	// used custom ParseChainID for crescent
+	chainID, err := ethermint.ParseChainID(ctx.ChainID())
+	if err != nil {
+		panic(err)
 	}
 
 	if k.eip155ChainID != nil && k.eip155ChainID.Cmp(chainID) != 0 {

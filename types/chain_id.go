@@ -42,16 +42,27 @@ func ParseChainID(chainID string) (*big.Int, error) {
 		return nil, sdkerrors.Wrapf(ErrInvalidChainID, "chain-id '%s' cannot exceed 48 chars", chainID)
 	}
 
-	matches := ethermintChainID.FindStringSubmatch(chainID)
-	if matches == nil || len(matches) != 4 || matches[1] == "" {
-		return nil, sdkerrors.Wrapf(ErrInvalidChainID, "%s: %v", chainID, matches)
+	var chainIDInt *big.Int
+
+	// Temporary Manual Set Crescent Chain ID
+	if chainID == ChainIdOrigin {
+		// mainnet
+		chainIDInt = big.NewInt(ChainIdMainNet)
+	} else {
+		// testnet
+		chainIDInt = big.NewInt(ChainIdTestNet)
 	}
 
-	// verify that the chain-id entered is a base 10 integer
-	chainIDInt, ok := new(big.Int).SetString(matches[2], 10)
-	if !ok {
-		return nil, sdkerrors.Wrapf(ErrInvalidChainID, "epoch %s must be base-10 integer format", matches[2])
-	}
+	//matches := ethermintChainID.FindStringSubmatch(chainID)
+	//if matches == nil || len(matches) != 4 || matches[1] == "" {
+	//	return nil, sdkerrors.Wrapf(ErrInvalidChainID, "%s: %v", chainID, matches)
+	//}
+	//
+	//// verify that the chain-id entered is a base 10 integer
+	//chainIDInt, ok := new(big.Int).SetString(matches[2], 10)
+	//if !ok {
+	//	return nil, sdkerrors.Wrapf(ErrInvalidChainID, "epoch %s must be base-10 integer format", matches[2])
+	//}
 
 	return chainIDInt, nil
 }
